@@ -1,122 +1,203 @@
-# Jetracer software
+# JetRacer (Raspberry Pi + Waveshare) – Motor Control
 
-Initially, the following needs to be run:
+This repository contains a fully working motor and steering control stack
+for a JetRacer / Waveshare chassis using a Raspberry Pi 4.
+
+Motor control does NOT use Raspberry Pi GPIO directly.
+All motor and steering signals are driven via I2C using PCA9685 controllers.
+
+## Quick Start
+
+```python
+from control import JetRacer
+import time
+
+racer = JetRacer()
+try:
+    racer.set_throttle(0.5)      # 50% forward
+    racer.set_steering_us(1700)  # Center
+    time.sleep(2)
+finally:
+    racer.shutdown()
 ```
-sudo raspi-config nonint do_i2c 0
+
+**See `control/README.md` for complete API documentation.**
+
+------------------------------------------------------------
+
+TESTING THE LIBRARY
+
+The motor control library has been converted into a reusable Python package.
+
+Quick validation:
+```bash
+cd /home/pi/jetracer
+python3 quick_test.py
 ```
 
-## Overview
+Full test suite:
+```bash
+python3 test_motors_manual.py
+```
 
-This repository contains low-level bring-up and test scripts for a JetRacer / Waveshare car chassis using a Raspberry Pi 4 and TB6612FNG motor driver, where:
-	•	Steering is controlled via a PCA9685 at 0x40
-	•	Throttle (DC motors) is controlled via a second PCA9685 at 0x60
-	•	Motors are driven through a TB6612FNG (not directly via GPIO)
+⚠️ **SAFETY**: Always place the robot on blocks before testing!
 
-The scripts below were created to identify hardware mappings and then validate motor control.
+------------------------------------------------------------
 
+HARDWARE ARCHITECTURE
 
-## File descriptions
+Two PCA9685 PWM controllers are present on the board:
 
-### pca60_pulse.py
+- I2C address 0x40 : steering servo
+- I2C address 0x60 : DC motor control (via TB6612FNG)
 
-Purpose:
-Discovery script to determine whether the I2C device at address 0x60 is a PCA9685 and whether it drives the motor controller.
+The TB6612FNG motor driver is always enabled (STBY tied high).
 
-What it does:
-	•	Connects to PCA9685 at 0x60
-	•	Pulses all 16 channels at two different frequencies (50 Hz and 1000 Hz)
-	•	Allows probing of TB6612FNG pins with a multimeter to detect activity
+------------------------------------------------------------
 
-Used to discover:
-	•	That motor PWM signals come from PCA9685 at 0x60
-	•	Approximate channel numbers for PWMA / PWMB
-
-
-### pca60_pwma_find.py
-
-Purpose:
-Identify the exact PCA9685 channel connected to PWMA (motor A speed).
-
-What it does:
-	•	Pulses channels 5–8 individually
-	•	Allows monitoring of TB6612FNG pin 23 (PWMA)
-
-Result:
-	•	PWMA = channel 7
-
-
-### pca60_pwmb_find.py
-
-Purpose:
-Identify the exact PCA9685 channel connected to PWMB (motor B speed).
-
-What it does:
-	•	Pulses all 16 channels briefly
-	•	Allows monitoring of TB6612FNG pin 15 (PWMB)
-
-Result:
-	•	PWMB = channel 0
-
-
-### pca60_dir_find.py
-
-Purpose:
-Identify which PCA9685 channels drive the direction pins of the TB6612FNG.
-
-What it does:
-	•	Turns each PCA9685 channel fully on (digital high) one at a time
-	•	Allows probing of TB6612FNG direction pins
-
-Used to map:
-	•	AIN1 (pin 21) → channel 5
-	•	AIN2 (pin 22) → channel 6
-	•	BIN1 (pin 17) → channel 2
-	•	BIN2 (pin 16) → channel 1
-
-
-### throttle_test.py
-
-Purpose:
-Final validated motor control test for both rear motors.
-
-What it does:
-	•	Uses PCA9685 at 0x60
-	•	Correctly sets:
-	•	direction pins (AIN/BIN)
-	•	PWM speed pins (PWMA/PWMB)
-	•	Performs:
-	•	forward ramp
-	•	stop
-	•	reverse ramp
-	•	stop
-
-Motor mapping used:
+DISCOVERED MOTOR PIN MAPPING
 
 Motor A:
-	•	PWMA = ch 7
-	•	AIN1 = ch 5
-	•	AIN2 = ch 6
+- PWMA  (TB6612 pin 23) -> PCA9685 channel 7
+- AIN1  (TB6612 pin 21) -> PCA9685 channel 5
+- AIN2  (TB6612 pin 22) -> PCA9685 channel 6
 
 Motor B:
-	•	PWMB = ch 0
-	•	BIN1 = ch 2
-	•	BIN2 = ch 1
+- PWMB  (TB6612 pin 15) -> PCA9685 channel 0
+- BIN1  (TB6612 pin 17) -> PCA9685 channel 2
+- BIN2  (TB6612 pin 16) -> PCA9685 channel 1
 
-Expected behaviour:
-	•	Both motors spin forward
-	•	Stop cleanly
-	•	Reverse
-	•	Stop
+Steering:
+- PCA9685 address 0x40
+- channel 0
+- centre approximately 1700 microseconds
 
-This script confirms the entire motor power and control path is correct.
+------------------------------------------------------------
 
+REPOSITORY STRUCTURE
 
-### Notes / lessons learned
-	•	The Waveshare JetRacer board uses two PCA9685 chips
-	•	0x40: steering servo
-	•	0x60: motor control
-	•	TB6612FNG STBY must be high (it is, on this board)
-	•	Motor PWM is not on Raspberry Pi GPIO
-	•	Direction pins are driven as digital signals via PCA9685 channels
-	•	High PWM frequency (~1000 Hz) works well for motor speed control
+.
+|-- control/
+|   |-- motors.py          unified steering + throttle driver
+|   |-- keyboard_drive.py  keyboard teleoperation (WASD)
+|   |-- estop.py           emergency stop helper
+|
+|-- tests/
+|   |-- throttle_test.py   final validated motor test
+|   |-- pca60_pulse.py     PCA9685 discovery at 0x60
+|   |-- pca60_pwma_find.py find PWMA channel
+|   |-- pca60_dir_find.py  find direction pins
+|   |-- pca60_dir_scan.py  full direction scan
+|   |-- gpio_pulse_scan.sh early GPIO sanity check
+|
+|-- main.py
+|-- steer_hold.py
+|-- pyproject.toml
+|-- README.md
 
+------------------------------------------------------------
+
+FILE DESCRIPTIONS
+
+tests/pca60_pulse.py
+- Pulses all PCA9685 channels on address 0x60
+- Used with a multimeter to confirm motor control is via PCA9685
+- Confirms usable PWM frequency (~1000 Hz)
+
+tests/pca60_pwma_find.py
+- Identifies the PWM channel for motor A speed
+- Result: PWMA = channel 7
+
+tests/pca60_dir_find.py
+- Identifies direction pins for both motors
+- Results:
+  AIN1 = ch 5
+  AIN2 = ch 6
+  BIN1 = ch 2
+  BIN2 = ch 1
+
+tests/throttle_test.py
+- Final validated motor test
+- Forward ramp
+- Stop
+- Reverse ramp
+- Stop
+- Confirms full motor control path works
+
+------------------------------------------------------------
+
+control/motors.py
+
+Unified low-level driver responsible for:
+- Initialising both PCA9685 controllers
+- Converting throttle values in range [-1.0, 1.0] to:
+  - direction pins
+  - PWM duty cycle
+- Steering control via pulse width in microseconds
+
+This file is the single source of truth for hardware mapping.
+
+------------------------------------------------------------
+
+control/keyboard_drive.py
+
+Keyboard teleoperation.
+
+Controls:
+- W / S : throttle forward / reverse
+- A / D : steering left / right
+- SPACE : immediate stop
+- Q : quit
+
+Uses motors.py exclusively.
+
+------------------------------------------------------------
+
+control/estop.py
+
+Emergency stop helper.
+Placeholder for:
+- watchdog
+- WiFi heartbeat
+- ROS integration
+
+------------------------------------------------------------
+
+CONTROL MODEL
+
+Throttle:
+- range: -1.0 to 1.0
+- sign controls direction
+- magnitude controls speed
+- both motors driven symmetrically
+
+Steering:
+- servo pulse width in microseconds
+- typical values:
+  left   ~1400
+  centre ~1700
+  right  ~2000
+
+------------------------------------------------------------
+
+NOTES / LESSONS LEARNED
+
+- Motors are not connected to Raspberry Pi GPIO
+- All TB6612 pins are driven via PCA9685
+- Two independent PCA9685 controllers are present
+- Direction pins are driven digitally
+- PWM frequency around 1000 Hz works well
+- Multimeter-based debugging was essential
+
+------------------------------------------------------------
+
+NEXT STEPS (OPTIONAL)
+
+- ROS2 node
+- gamepad / joystick input
+- acceleration limiting
+- watchdog / failsafe
+- wiring schematic
+
+This repository represents a fully reverse-engineered,
+reproducible, and working JetRacer motor control setup.

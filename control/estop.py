@@ -1,0 +1,2 @@
+class EStop(Exception):
+    pass
