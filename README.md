@@ -98,8 +98,6 @@ Drive your JetRacer with WASD keys:
 | **4** | 100% | Full power |
 | **0** | 0% | Stop |
 
-**Tip:** Start with key `1` (25%) in new areas, then increase speed when comfortable.
-
 ---
 
 ## Using the Library
@@ -224,16 +222,6 @@ python3 quick_test.py
 # Check library import
 python3 -c "from control import JetRacer; print('OK')"
 ```
-
----
-
-## Safety
-
-- Always place robot on blocks for initial testing
-- Start with low speed (key `1` = 25%)
-- Keep emergency stop ready (SPACE or Ctrl+C)
-- Test in safe, open areas
-- Check battery level before driving
 
 ---
 
