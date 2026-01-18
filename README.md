@@ -3,6 +3,8 @@
 This repository contains a fully working motor and steering control stack
 for a JetRacer / Waveshare chassis using a Raspberry Pi 4.
 
+Install a normal Raspberry pi 64 bit image to get started.
+
 Motor control does NOT use Raspberry Pi GPIO directly.
 All motor and steering signals are driven via I2C using PCA9685 controllers.
 
