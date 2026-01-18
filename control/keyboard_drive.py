@@ -14,6 +14,11 @@ SAFETY: Ensure robot is in a safe area before driving!
 import sys
 import termios
 import tty
+from pathlib import Path
+
+# Add parent directory to path so we can import control module
+sys.path.insert(0, str(Path(__file__).parent.parent))
+
 from control import JetRacer
 
 car = JetRacer()
