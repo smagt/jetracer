@@ -9,7 +9,7 @@ Motor control does NOT use Raspberry Pi GPIO directly. All motor and steering si
 ## Quick Start
 
 ```bash
-./drive.sh          # Drive with keyboard (WASD)
+./drive.sh          # Drive with keyboard (WASZ)
 ```
 
 ---
