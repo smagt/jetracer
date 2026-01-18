@@ -27,6 +27,14 @@ STEER_LEFT   = 1400
 STEER_RIGHT  = 2000
 speed = 0.0
 
+# Speed presets
+SPEED_PRESETS = {
+    '1': 0.25,  # 25% - Slow/Careful
+    '2': 0.50,  # 50% - Medium
+    '3': 0.75,  # 75% - Fast
+    '4': 1.00,  # 100% - Full Power
+}
+
 
 def getch():
     """Get a single character from stdin without echo."""
@@ -45,10 +53,17 @@ print("""
 ╚═══════════════════════════════════════════════════════╝
 
 Controls:
-  W/S  - Throttle up/down (±5% per press, max ±50%)
-  A/D  - Steer left/right
-  SPACE - Emergency stop
-  Q    - Quit
+  W/S    - Throttle up/down (±5% per press, max ±100%)
+  A/D    - Steer left/right
+  SPACE  - Emergency stop
+  Q      - Quit
+
+Speed Presets (instant jump to speed):
+  1      - 25% speed (Slow/Careful)
+  2      - 50% speed (Medium)
+  3      - 75% speed (Fast)
+  4      - 100% speed (Full Power)
+  0      - 0% speed (Stop)
 
 ⚠️  SAFETY: Ensure robot is in a safe area!
 Press Ctrl+C anytime for emergency stop.
@@ -63,10 +78,10 @@ try:
         c = getch()
         
         if c == 'w':
-            speed = min(speed + 0.05, 0.5)
+            speed = min(speed + 0.05, 1.0)
             print(f"\r  Throttle: {speed:+.2f} ({int(speed*100):+3d}%)  ", end='', flush=True)
         elif c == 's':
-            speed = max(speed - 0.05, -0.5)
+            speed = max(speed - 0.05, -1.0)
             print(f"\r  Throttle: {speed:+.2f} ({int(speed*100):+3d}%)  ", end='', flush=True)
         elif c == 'a':
             car.set_steering_us(STEER_LEFT)
@@ -78,6 +93,12 @@ try:
             speed = 0.0
             car.set_steering_us(STEER_CENTER)
             print(f"\r  ⚠️  EMERGENCY STOP                  ", end='', flush=True)
+        elif c in SPEED_PRESETS:
+            speed = SPEED_PRESETS[c]
+            print(f"\r  Speed preset {c}: {speed:+.2f} ({int(speed*100):+3d}%)  ", end='', flush=True)
+        elif c == '0':
+            speed = 0.0
+            print(f"\r  Speed preset 0: STOP                  ", end='', flush=True)
         elif c == 'q':
             print("\r\nQuitting...                            ")
             break
