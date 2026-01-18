@@ -53,8 +53,8 @@ print("""
 ╚═══════════════════════════════════════════════════════╝
 
 Controls:
-  W/S    - Throttle up/down (±5% per press, max ±100%)
-  A/D    - Steer left/right
+  W/Z    - Throttle up/down (±5% per press, max ±100%)
+  A/S    - Steer left/right
   SPACE  - Emergency stop
   Q      - Quit
 
@@ -80,13 +80,13 @@ try:
         if c == 'w':
             speed = min(speed + 0.05, 1.0)
             print(f"\r  Throttle: {speed:+.2f} ({int(speed*100):+3d}%)  ", end='', flush=True)
-        elif c == 's':
+        elif c == 'z':
             speed = max(speed - 0.05, -1.0)
             print(f"\r  Throttle: {speed:+.2f} ({int(speed*100):+3d}%)  ", end='', flush=True)
         elif c == 'a':
             car.set_steering_us(STEER_LEFT)
             print(f"\r  Steering: LEFT    Throttle: {speed:+.2f}  ", end='', flush=True)
-        elif c == 'd':
+        elif c == 's':
             car.set_steering_us(STEER_RIGHT)
             print(f"\r  Steering: RIGHT   Throttle: {speed:+.2f}  ", end='', flush=True)
         elif c == ' ':
