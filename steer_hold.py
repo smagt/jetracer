@@ -45,8 +45,10 @@ def calibrate_position(ch, name, start_us=1500):
         print(f"Set to {current_us}us")
 
 # Initialize I2C and PCA9685
-i2c = busio.I2C(board.SCL, board.SDA)
-pca = PCA9685(i2c)
+# Use the standard I2C pins on Raspberry Pi
+from board import SCL, SDA
+i2c = busio.I2C(SCL, SDA)
+pca = PCA9685(i2c, address=0x40)
 pca.frequency = FREQ
 ch = pca.channels[CH]
 
