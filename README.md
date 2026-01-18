@@ -259,4 +259,6 @@ python3 test_motors_manual.py
 
 ## License
 
-Part of the JetRacer project.
+MIT License - Part of the JetRacer project.
+
+See [LICENSE](LICENSE) file for details.
