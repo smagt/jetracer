@@ -65,9 +65,6 @@ Speed Presets (instant jump to speed):
   4      - 100% speed (Full Power)
   0      - 0% speed (Stop)
 
-⚠️  SAFETY: Ensure robot is in a safe area!
-Press Ctrl+C anytime for emergency stop.
-
 Starting...
 """)
 
