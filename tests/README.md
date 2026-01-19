@@ -4,6 +4,8 @@ This directory contains the hardware discovery and testing scripts used to rever
 
 These tests were used to identify the correct PCA9685 channels and pin mappings for the TB6612FNG motor driver and steering servo.
 
+![image](TB6612FNG-Pinout.jpg)
+
 ---
 
 ## Overview
